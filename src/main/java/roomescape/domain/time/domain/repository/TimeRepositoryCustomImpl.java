@@ -9,13 +9,11 @@ import java.util.List;
 public class TimeRepositoryCustomImpl implements TimeRepositoryCustom {
 
     private static final String FIND_BY_THEME_ID_AND_DATE_JPQL = """
-            SELECT rt FROM Time rt
-            WHERE rt.id NOT IN (
-                SELECT rt.time.id
-                FROM ReservationTime rt
-                JOIN rt.reservation r
-                JOIN r.reservationThemes rtThemes
-                WHERE rtThemes.theme.id = :themeId
+            SELECT t FROM Time t
+            WHERE t.id NOT IN (
+                SELECT r.time.id
+                FROM Reservation r
+                WHERE r.theme.id = :themeId
                 AND r.date = :date
             )
             """;

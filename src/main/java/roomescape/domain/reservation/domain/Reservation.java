@@ -1,13 +1,9 @@
 package roomescape.domain.reservation.domain;
 
 import jakarta.persistence.*;
+import roomescape.domain.member.domain.Member;
+import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.time.domain.Time;
-
-import java.util.List;
-
-import static roomescape.utils.DateTimeCheckUtil.isBeforeCheck;
-import static roomescape.utils.FormatCheckUtil.reservationDateFormatCheck;
-import static roomescape.utils.FormatCheckUtil.reservationNameFormatCheck;
 
 @Entity
 public class Reservation {
@@ -18,29 +14,28 @@ public class Reservation {
     private String name;
     private String date;
 
-    @OneToMany(mappedBy = "reservation")
-    private List<ReservationTheme> reservationThemes;
+    @OneToOne
+    @JoinColumn(name = "theme_id")
+    private Theme theme;
 
-    @OneToMany(mappedBy = "reservation")
-    private List<ReservationTime> reservationTimes;
+    @OneToOne
+    @JoinColumn(name = "time_id")
+    private Time time;
 
-    @OneToMany(mappedBy = "reservation")
-    private List<ReservationMember> reservationMembers;
+    @OneToOne
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-    public Reservation(Long id, String name, String date, Time time) {
-        validationCheck(name, date, time);
+    public Reservation(Long id, String name, String date, Theme theme, Time time, Member member) {
         this.id = id;
         this.name = name;
         this.date = date;
+        this.theme = theme;
+        this.time = time;
+        this.member = member;
     }
 
     public Reservation() {
-    }
-
-    private static void validationCheck(String name, String date, Time time) {
-        reservationNameFormatCheck(name);
-        reservationDateFormatCheck(date);
-        isBeforeCheck(date, time.getStartAt());
     }
 
     public Long getId() {
@@ -53,5 +48,17 @@ public class Reservation {
 
     public String getDate() {
         return date;
+    }
+
+    public Theme getTheme() {
+        return theme;
+    }
+
+    public Time getTime() {
+        return time;
+    }
+
+    public Member getMember() {
+        return member;
     }
 }

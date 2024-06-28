@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.member.domain.Role;
-import roomescape.domain.member.domain.repository.MemberJpaRepository;
+import roomescape.domain.member.domain.repository.MemberRepository;
 import roomescape.domain.member.error.exception.MemberErrorCode;
 import roomescape.domain.member.error.exception.MemberException;
 import roomescape.domain.member.service.dto.MemberLoginRequest;
@@ -22,9 +22,9 @@ public class MemberService {
     private static final String EMAIL = "email";
     private static final String NAME = "name";
 
-    private final MemberJpaRepository memberRepository;
+    private final MemberRepository memberRepository;
 
-    public MemberService(MemberJpaRepository memberRepository) {
+    public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 
@@ -42,7 +42,8 @@ public class MemberService {
 
     @Transactional
     public Member save(MemberRequest memberRequest) {
-        return memberRepository.save(new Member(null, memberRequest.getName(), memberRequest.getEmail(), memberRequest.getPassword(), Role.USER.getRole()));
+        Long id = memberRepository.save(new Member(null, memberRequest.getName(), memberRequest.getEmail(), memberRequest.getPassword(), Role.USER.getRole()));
+        return findById(id);
     }
 
     @Transactional(readOnly = true)

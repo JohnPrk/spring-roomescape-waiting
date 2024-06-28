@@ -27,7 +27,7 @@ public class RoleCheckInterceptor implements HandlerInterceptor {
         String token = extractTokenFromCookie(cookies);
         Member member = memberService.findByToken(token);
         if (member == null || member.isAdmin()) {
-            throw new MemberException(MemberErrorCode.NOT_FOUND_COOKIE_ERROR);
+            throw new MemberException(MemberErrorCode.UNAUTHORIZED_ERROR);
         }
         return true;
     }

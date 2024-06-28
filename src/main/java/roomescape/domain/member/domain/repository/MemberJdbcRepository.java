@@ -1,6 +1,7 @@
 package roomescape.domain.member.domain.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -45,14 +46,7 @@ public class MemberJdbcRepository implements MemberRepository {
 
     @Override
     public Optional<Member> findByEmailAndPassword(String email, String password) {
-        List<Member> members = jdbcTemplate.query(FIND_BY_EMAIL_AND_PASSWORD_SQL, (rs, rowNum) ->
-                        new Member(
-                                rs.getLong(ID),
-                                rs.getString(NAME),
-                                rs.getString(EMAIL),
-                                rs.getString(PASSWORD),
-                                rs.getString(ROLE)
-                        ),
+        List<Member> members = jdbcTemplate.query(FIND_BY_EMAIL_AND_PASSWORD_SQL, memberRowMapper(),
                 email, password);
         if (members.isEmpty()) {
             return Optional.empty();
@@ -62,14 +56,7 @@ public class MemberJdbcRepository implements MemberRepository {
 
     @Override
     public Optional<Member> findById(Long memberId) {
-        List<Member> members = jdbcTemplate.query(FIND_BY_ID_SQL, (rs, rowNum) ->
-                        new Member(
-                                rs.getLong(ID),
-                                rs.getString(NAME),
-                                rs.getString(EMAIL),
-                                rs.getString(PASSWORD),
-                                rs.getString(ROLE)
-                        ),
+        List<Member> members = jdbcTemplate.query(FIND_BY_ID_SQL, memberRowMapper(),
                 memberId);
         if (members.isEmpty()) {
             return Optional.empty();
@@ -86,15 +73,7 @@ public class MemberJdbcRepository implements MemberRepository {
 
     @Override
     public List<Member> findAll() {
-        return jdbcTemplate.query(FIND_ALL_SQL, (rs, rowNum) ->
-                new Member(
-                        rs.getLong(ID),
-                        rs.getString(NAME),
-                        rs.getString(EMAIL),
-                        rs.getString(PASSWORD),
-                        rs.getString(ROLE)
-                )
-        );
+        return jdbcTemplate.query(FIND_ALL_SQL, memberRowMapper());
     }
 
     @Override
@@ -119,5 +98,16 @@ public class MemberJdbcRepository implements MemberRepository {
         dataSource.put(PASSWORD, member.getPassword());
         dataSource.put(ROLE, member.getRole());
         return dataSource;
+    }
+
+    private RowMapper<Member> memberRowMapper() {
+        return (rs, rowNum) ->
+                new Member(
+                        rs.getLong(ID),
+                        rs.getString(NAME),
+                        rs.getString(EMAIL),
+                        rs.getString(PASSWORD),
+                        rs.getString(ROLE)
+                );
     }
 }

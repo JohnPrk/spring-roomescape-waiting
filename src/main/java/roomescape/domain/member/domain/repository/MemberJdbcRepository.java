@@ -1,21 +1,20 @@
 package roomescape.domain.member.domain.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.member.domain.Role;
 
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class MemberJdbcRepository implements MemberRepository {
 
-    private static final String SAVE_SQL = "INSERT INTO member (name, email, password, role) VALUES (?, ?, ?, ?)";
     private static final String FIND_BY_EMAIL_AND_PASSWORD_SQL = """
             SELECT * 
             FROM member m
@@ -31,11 +30,17 @@ public class MemberJdbcRepository implements MemberRepository {
     private static final String EMAIL = "email";
     private static final String PASSWORD = "password";
     private static final String ROLE = "role";
+    private static final String MEMBER = "MEMBER";
 
     private final JdbcTemplate jdbcTemplate;
+    private final SimpleJdbcInsert jdbcInsert;
 
-    public MemberJdbcRepository(JdbcTemplate jdbcTemplate) {
+
+    public MemberJdbcRepository(JdbcTemplate jdbcTemplate, DataSource dataSource) {
         this.jdbcTemplate = jdbcTemplate;
+        this.jdbcInsert = new SimpleJdbcInsert(dataSource)
+                .withTableName(MEMBER)
+                .usingGeneratedKeyColumns(ID);
     }
 
     @Override
@@ -74,19 +79,9 @@ public class MemberJdbcRepository implements MemberRepository {
 
     @Override
     public Long save(Member member) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    SAVE_SQL,
-                    new String[]{ID}
-            );
-            preparedStatement.setString(1, member.getName());
-            preparedStatement.setString(2, member.getEmail());
-            preparedStatement.setString(3, member.getPassword());
-            preparedStatement.setString(4, member.getRole());
-            return preparedStatement;
-        }, keyHolder);
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Map<String, String> dataSource = setMemberDataSource(member);
+        Number number = jdbcInsert.executeAndReturnKey(dataSource);
+        return number.longValue();
     }
 
     @Override
@@ -115,5 +110,14 @@ public class MemberJdbcRepository implements MemberRepository {
             return preparedStatement;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
+    }
+
+    private Map<String, String> setMemberDataSource(Member member) {
+        Map<String, String> dataSource = new HashMap<>();
+        dataSource.put(NAME, member.getName());
+        dataSource.put(EMAIL, member.getEmail());
+        dataSource.put(PASSWORD, member.getPassword());
+        dataSource.put(ROLE, member.getRole());
+        return dataSource;
     }
 }

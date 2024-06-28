@@ -36,7 +36,6 @@ public class MemberJdbcRepository implements MemberRepository {
     private final JdbcTemplate jdbcTemplate;
     private final SimpleJdbcInsert jdbcInsert;
 
-
     public MemberJdbcRepository(JdbcTemplate jdbcTemplate, DataSource dataSource) {
         this.jdbcTemplate = jdbcTemplate;
         this.jdbcInsert = new SimpleJdbcInsert(dataSource)
@@ -46,22 +45,14 @@ public class MemberJdbcRepository implements MemberRepository {
 
     @Override
     public Optional<Member> findByEmailAndPassword(String email, String password) {
-        List<Member> members = jdbcTemplate.query(FIND_BY_EMAIL_AND_PASSWORD_SQL, memberRowMapper(),
-                email, password);
-        if (members.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(members.get(0));
+        Member member = jdbcTemplate.queryForObject(FIND_BY_EMAIL_AND_PASSWORD_SQL, memberRowMapper(), email, password);
+        return Optional.of(member);
     }
 
     @Override
     public Optional<Member> findById(Long memberId) {
-        List<Member> members = jdbcTemplate.query(FIND_BY_ID_SQL, memberRowMapper(),
-                memberId);
-        if (members.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(members.get(0));
+        Member member = jdbcTemplate.queryForObject(FIND_BY_ID_SQL, memberRowMapper(), memberId);
+        return Optional.of(member);
     }
 
     @Override

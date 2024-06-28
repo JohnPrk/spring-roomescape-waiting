@@ -1,6 +1,7 @@
 package roomescape.domain.time.domain.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -9,6 +10,7 @@ import roomescape.domain.time.domain.Time;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class TimeJdbcRepository implements TimeRepository {
@@ -21,8 +23,7 @@ public class TimeJdbcRepository implements TimeRepository {
                 FROM reservation r
                 WHERE r.date = ?
                 AND r.theme_id = ?
-                AND r.time_id = rt.id
-            )
+                AND r.time_id = rt.id)
             """;
     private static final String SAVE_SQL = "INSERT INTO reservation_time (start_at) VALUES (?);";
     private static final String FIND_BY_ID_SQL = "SELECT * FROM reservation_time WHERE id = ?;";
@@ -49,34 +50,30 @@ public class TimeJdbcRepository implements TimeRepository {
     }
 
     @Override
-    public Time findById(Long timeId) {
-        return jdbcTemplate.queryForObject(FIND_BY_ID_SQL, (rs, rowNum) ->
-                new Time(
-                        rs.getLong(ID),
-                        rs.getString(START_AT)
-                ), timeId);
+    public Optional<Time> findById(Long timeId) {
+        return Optional.of(jdbcTemplate.queryForObject(FIND_BY_ID_SQL, timeRowMapper(), timeId));
     }
 
     @Override
     public List<Time> findAll() {
-        return jdbcTemplate.query(FIND_ALL_SQL, (rs, rowNum) ->
-                new Time(
-                        rs.getLong(ID),
-                        rs.getString(START_AT)
-                ));
+        return jdbcTemplate.query(FIND_ALL_SQL, timeRowMapper());
     }
 
     @Override
-    public void delete(Long timeId) {
-        jdbcTemplate.update(DELETE_SQL, timeId);
+    public void delete(Time time) {
+        jdbcTemplate.update(DELETE_SQL, time.getId());
     }
 
     @Override
     public List<Time> findByThemeIdAndDate(String themeId, String date) {
-        return jdbcTemplate.query(FIND_BY_THEME_ID_AND_DATE_SQL, (rs, rowNum) ->
+        return jdbcTemplate.query(FIND_BY_THEME_ID_AND_DATE_SQL, timeRowMapper(), date, themeId);
+    }
+
+    private RowMapper<Time> timeRowMapper() {
+        return (rs, rowNum) ->
                 new Time(
                         rs.getLong(ID),
                         rs.getString(START_AT)
-                ), date, themeId);
+                );
     }
 }

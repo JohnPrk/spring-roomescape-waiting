@@ -3,7 +3,7 @@ package roomescape.domain.time.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.time.domain.Time;
-import roomescape.domain.time.domain.repository.TimeJpaRepository;
+import roomescape.domain.time.domain.repository.TimeRepository;
 import roomescape.domain.time.error.exception.TimeErrorCode;
 import roomescape.domain.time.error.exception.TimeException;
 import roomescape.domain.time.service.dto.TimeRequest;
@@ -13,16 +13,17 @@ import java.util.List;
 @Service
 public class TimeService {
 
-    private final TimeJpaRepository timeRepository;
+    private final TimeRepository timeRepository;
 
-    public TimeService(TimeJpaRepository timeRepository) {
+    public TimeService(TimeRepository timeRepository) {
         this.timeRepository = timeRepository;
     }
 
     @Transactional
     public Time save(TimeRequest timeRequest) {
         Time time = new Time(null, timeRequest.getStartAt());
-        return timeRepository.save(time);
+        Long id = timeRepository.save(time);
+        return findById(id);
     }
 
     @Transactional

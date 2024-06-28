@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.member.service.MemberService;
 import roomescape.domain.reservation.domain.Reservation;
-import roomescape.domain.reservation.domain.repository.ReservationJpaRepository;
+import roomescape.domain.reservation.domain.repository.ReservationRepository;
 import roomescape.domain.reservation.error.exception.ReservationErrorCode;
 import roomescape.domain.reservation.error.exception.ReservationException;
 import roomescape.domain.reservation.service.dto.AdminReservationRequest;
@@ -27,9 +27,9 @@ public class ReservationService {
     private final TimeService timeService;
     private final ThemeService themeService;
     private final MemberService memberService;
-    private final ReservationJpaRepository reservationRepository;
+    private final ReservationRepository reservationRepository;
 
-    public ReservationService(TimeService timeService, ThemeService themeService, MemberService memberService, ReservationJpaRepository reservationRepository) {
+    public ReservationService(TimeService timeService, ThemeService themeService, MemberService memberService, ReservationRepository reservationRepository) {
         this.timeService = timeService;
         this.themeService = themeService;
         this.memberService = memberService;
@@ -42,7 +42,8 @@ public class ReservationService {
         Theme theme = themeService.findById(reservationRequest.getThemeId());
         validationCheck(reservationRequest.getName(), reservationRequest.getDate(), time);
         Reservation reservation = new Reservation(null, reservationRequest.getName(), reservationRequest.getDate(), theme, time, loginMember);
-        return reservationRepository.save(reservation);
+        Long id = reservationRepository.save(reservation);
+        return findById(id);
     }
 
     @Transactional
@@ -51,7 +52,8 @@ public class ReservationService {
         Theme theme = themeService.findById(adminReservationRequest.getThemeId());
         Member member = memberService.findById(adminReservationRequest.getMemberId());
         Reservation reservation = new Reservation(null, member.getName(), adminReservationRequest.getDate(), theme, time, member);
-        return reservationRepository.save(reservation);
+        Long id = reservationRepository.save(reservation);
+        return findById(id);
     }
 
     @Transactional(readOnly = true)
@@ -66,7 +68,7 @@ public class ReservationService {
 
     @Transactional
     public void delete(Long id) {
-        Reservation reservation = reservationRepository.findById(id).orElseThrow(() -> new ReservationException(ReservationErrorCode.INVALID_RESERVATION_DETAILS_ERROR));
+        Reservation reservation = findById(id);
         reservationRepository.delete(reservation);
     }
 

@@ -1,6 +1,7 @@
 package roomescape.domain.reservation.domain.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
@@ -12,6 +13,7 @@ import roomescape.domain.time.domain.Time;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class ReservationJdbcRepository implements ReservationRepository {
@@ -90,28 +92,8 @@ public class ReservationJdbcRepository implements ReservationRepository {
     }
 
     @Override
-    public Reservation findById(long reservationId) {
-        return jdbcTemplate.queryForObject(FIND_BY_ID_SQL, (rs, rowNum) -> new Reservation(
-                rs.getLong(RESERVATION_ID),
-                rs.getString(RESERVATION_NAME),
-                rs.getString(RESERVATION_DATE),
-                new Theme(
-                        rs.getLong(THEME_ID),
-                        rs.getString(THEME_NAME),
-                        rs.getString(THEME_DESCRIPTION),
-                        rs.getString(THEME_THUMBNAIL)
-                ),
-                new Time(
-                        rs.getLong(TIME_ID),
-                        rs.getString(TIME_START_AT)),
-                new Member(
-                        rs.getLong(MEMBER_ID),
-                        rs.getString(MEMBER_NAME),
-                        rs.getString(MEMBER_EMAIL),
-                        rs.getString(MEMBER_PASSWORD),
-                        rs.getString(MEMBER_ROLE)
-
-                )), reservationId);
+    public Optional<Reservation> findById(long reservationId) {
+        return Optional.of(jdbcTemplate.queryForObject(FIND_BY_ID_SQL, reservationRowMapper(), reservationId));
     }
 
     @Override
@@ -134,7 +116,16 @@ public class ReservationJdbcRepository implements ReservationRepository {
 
     @Override
     public List<Reservation> findAll() {
-        return jdbcTemplate.query(FIND_ALL_SQL, (rs, rowNum) ->
+        return jdbcTemplate.query(FIND_ALL_SQL, reservationRowMapper());
+    }
+
+    @Override
+    public void delete(Reservation reservation) {
+        jdbcTemplate.update(DELETE_SQL, reservation.getId());
+    }
+
+    private RowMapper<Reservation> reservationRowMapper() {
+        return (rs, rowNum) ->
                 new Reservation(
                         rs.getLong(RESERVATION_ID),
                         rs.getString(RESERVATION_NAME),
@@ -154,12 +145,6 @@ public class ReservationJdbcRepository implements ReservationRepository {
                                 rs.getString(MEMBER_EMAIL),
                                 rs.getString(MEMBER_PASSWORD),
                                 rs.getString(MEMBER_ROLE)
-                        ))
-        );
-    }
-
-    @Override
-    public void delete(Long id) {
-        jdbcTemplate.update(DELETE_SQL, id);
+                        ));
     }
 }

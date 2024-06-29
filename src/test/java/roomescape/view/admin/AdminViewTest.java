@@ -1,4 +1,4 @@
-package roomescape.view;
+package roomescape.view.admin;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -17,7 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class ViewTest {
+public class AdminViewTest {
 
     private static final String EMAIL = "email";
     private static final String PASSWORD = "password";
@@ -81,21 +81,7 @@ public class ViewTest {
     }
 
     @Test
-    void 사용자향_예약_관리_페이지를_랜더링한다() {
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .when().get("/reservation")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
-
-    @Test
-    void 관리자향_예약_관리_페이지를_랜더링한다() {
+    void 관리자용_예약_관리_페이지를_랜더링한다() {
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -109,7 +95,7 @@ public class ViewTest {
     }
 
     @Test
-    void 관리자향_시간_관리_페이지를_랜더링한다() {
+    void 관리자용_시간_관리_페이지를_랜더링한다() {
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -123,38 +109,12 @@ public class ViewTest {
     }
 
     @Test
-    void 관리자향_테마_관리_페이지를_랜더링한다() {
+    void 관리자용_테마_관리_페이지를_랜더링한다() {
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()
                 .cookie(TOKEN, token)
                 .when().get("/admin/theme")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
-    @Test
-    void 로그인_페이지를_랜더링한다() {
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .when().get("/login")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
-    @Test
-    void 사용자향_내_예약_관리_페이지를_랜더링한다() {
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .when().get("/reservation-mine")
                 .then().log().all()
                 .extract();
 

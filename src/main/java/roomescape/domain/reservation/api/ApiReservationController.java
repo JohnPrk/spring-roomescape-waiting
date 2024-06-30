@@ -6,6 +6,7 @@ import roomescape.argumentResolver.annotation.Login;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.reservation.domain.Reservation;
 import roomescape.domain.reservation.service.ReservationService;
+import roomescape.domain.reservation.service.dto.MyReservationResponse;
 import roomescape.domain.reservation.service.dto.ReservationRequest;
 import roomescape.domain.reservation.service.dto.ReservationResponse;
 
@@ -34,6 +35,12 @@ public class ApiReservationController {
                         reservation.getTheme(),
                         reservation.getMember())).collect(Collectors.toList());
         return ResponseEntity.ok().body(responses);
+    }
+
+    @GetMapping("-mine")
+    public ResponseEntity<List<MyReservationResponse>> getReservationsByMember(@Login Member loginMember) {
+        List<MyReservationResponse> myReservationResponses = reservationService.findAllByMemberId(loginMember.getId());
+        return ResponseEntity.ok().body(myReservationResponses);
     }
 
     @PostMapping

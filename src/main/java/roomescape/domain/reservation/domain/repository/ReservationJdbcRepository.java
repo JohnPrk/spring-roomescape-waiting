@@ -68,6 +68,31 @@ public class ReservationJdbcRepository implements ReservationRepository {
             INNER JOIN member m
                 ON r.member_id = m.id;
             """;
+    private static final String FIND_BY_MEMBER_ID_SQL = """
+            SELECT
+                r.id AS reservation_id,
+                r.name AS reservation_name,
+                r.date AS reservation_date,
+                rt.id AS reservation_time_id,
+                rt.start_at AS reservation_time_start_at,
+                t.id AS theme_id,
+                t.name AS theme_name,
+                t.description AS theme_description,
+                t.thumbnail AS theme_thumbnail,
+                m.id AS member_id,
+                m.name AS member_name,
+                m.email AS member_email,
+                m.password AS member_password,
+                m.role AS member_role
+            FROM reservation r
+            INNER JOIN reservation_time rt
+                ON r.time_id = rt.id
+            INNER JOIN theme t
+                ON r.theme_id = t.id
+            INNER JOIN member m
+                ON r.member_id = m.id
+            WHERE m.id = ?;
+            """;
     private static final String DELETE_SQL = "DELETE FROM reservation WHERE id = ?;";
     private static final String ID = "id";
     private static final String RESERVATION_ID = "reservation_id";
@@ -117,6 +142,11 @@ public class ReservationJdbcRepository implements ReservationRepository {
     @Override
     public List<Reservation> findAll() {
         return jdbcTemplate.query(FIND_ALL_SQL, reservationRowMapper());
+    }
+
+    @Override
+    public List<Reservation> findAllByMemberId(Long id) {
+        return jdbcTemplate.query(FIND_BY_MEMBER_ID_SQL, reservationRowMapper(), id);
     }
 
     @Override

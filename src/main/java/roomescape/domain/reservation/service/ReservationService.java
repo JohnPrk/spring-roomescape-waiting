@@ -9,6 +9,7 @@ import roomescape.domain.reservation.domain.repository.ReservationRepository;
 import roomescape.domain.reservation.error.exception.ReservationErrorCode;
 import roomescape.domain.reservation.error.exception.ReservationException;
 import roomescape.domain.reservation.service.dto.AdminReservationRequest;
+import roomescape.domain.reservation.service.dto.MyReservationResponse;
 import roomescape.domain.reservation.service.dto.ReservationRequest;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.theme.service.ThemeService;
@@ -23,6 +24,8 @@ import static roomescape.utils.FormatCheckUtil.reservationNameFormatCheck;
 
 @Service
 public class ReservationService {
+
+    private static final String RESERVED = "예약";
 
     private final TimeService timeService;
     private final ThemeService themeService;
@@ -64,6 +67,18 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<Reservation> findAll() {
         return reservationRepository.findAll();
+    }
+
+    public List<MyReservationResponse> findAllByMemberId(Long id) {
+        List<Reservation> reservations = reservationRepository.findAllByMemberId(id);
+        return reservations.stream().map(r ->
+                new MyReservationResponse(
+                        r.getId(),
+                        r.getTheme().getName(),
+                        r.getDate(),
+                        String.valueOf(r.getTime().getStartAt()),
+                        RESERVED)
+        ).toList();
     }
 
     @Transactional

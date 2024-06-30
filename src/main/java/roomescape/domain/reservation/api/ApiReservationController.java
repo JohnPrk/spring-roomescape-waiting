@@ -37,7 +37,7 @@ public class ApiReservationController {
         return ResponseEntity.ok().body(responses);
     }
 
-    @GetMapping("-mine")
+    @GetMapping("/mine")
     public ResponseEntity<List<MyReservationResponse>> getReservationsByMember(@Login Member loginMember) {
         List<MyReservationResponse> myReservationResponses = reservationService.findAllByMemberId(loginMember.getId());
         return ResponseEntity.ok().body(myReservationResponses);

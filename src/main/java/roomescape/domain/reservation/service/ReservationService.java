@@ -45,6 +45,7 @@ public class ReservationService {
         Theme theme = themeService.findById(reservationRequest.getThemeId());
         validationCheck(reservationRequest.getName(), reservationRequest.getDate(), time);
         Reservation reservation = new Reservation(null, reservationRequest.getName(), reservationRequest.getDate(), theme, time, loginMember);
+        loginMember.addReservation(reservation);
         Long id = reservationRepository.save(reservation);
         return findById(id);
     }
@@ -55,6 +56,7 @@ public class ReservationService {
         Theme theme = themeService.findById(adminReservationRequest.getThemeId());
         Member member = memberService.findById(adminReservationRequest.getMemberId());
         Reservation reservation = new Reservation(null, member.getName(), adminReservationRequest.getDate(), theme, time, member);
+        member.addReservation(reservation);
         Long id = reservationRepository.save(reservation);
         return findById(id);
     }
@@ -74,9 +76,9 @@ public class ReservationService {
         return reservations.stream().map(r ->
                 new MyReservationResponse(
                         r.getId(),
-                        r.getTheme().getName(),
+                        r.getTheme(),
                         r.getDate(),
-                        String.valueOf(r.getTime().getStartAt()),
+                        r.getTime(),
                         RESERVED)
         ).toList();
     }

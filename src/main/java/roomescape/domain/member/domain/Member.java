@@ -58,4 +58,8 @@ public class Member {
     public String getRole() {
         return role;
     }
+
+    public void addReservation(Reservation reservation) {
+        reservations.add(reservation);
+    }
 }

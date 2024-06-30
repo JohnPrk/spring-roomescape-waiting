@@ -23,10 +23,83 @@ public class MemberTest {
     private static final String NAME = "name";
     private static final String TOKEN = "token";
     private static final String ROLE = "role";
-    private static String token = null;
+    private static final String ID = "id";
 
     @Test
     void 회원가입을_한다() {
+
+        joinAndGetMemberId();
+    }
+
+    @Test
+    void 로그인을_하고_쿠키를_얻는다() {
+
+        joinAndGetMemberId();
+        loginAndGetToken();
+    }
+
+    @Test
+    void 쿠키를_이용해서_사용자_정보를_조회한다() {
+
+        //given
+        joinAndGetMemberId();
+        String token = loginAndGetToken();
+
+        //when
+        ExtractableResponse<Response> response = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .cookie(TOKEN, token)
+                .when().get("/login/check")
+                .then().log().all()
+                .extract();
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.jsonPath().getString(NAME)).isEqualTo("박민욱");
+    }
+
+    @Test
+    void 쿠키를_이용해서_사용자를_확인하고_관리자_권한을_부여한다() {
+
+        //given
+        joinAndGetMemberId();
+        String token = loginAndGetToken();
+
+        //when
+        ExtractableResponse<Response> response = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .cookie(TOKEN, token)
+                .when().post("/members/role")
+                .then().log().all()
+                .extract();
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.jsonPath().getString(ROLE)).isEqualTo("ADMIN");
+    }
+
+    protected String loginAndGetToken() {
+
+        //given
+        Map<String, Object> member = new HashMap<>();
+        member.put(EMAIL, "test@naver.com");
+        member.put(PASSWORD, "password123");
+
+        //when
+        ExtractableResponse<Response> response = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .body(member)
+                .when().post("/login")
+                .then().log().all()
+                .extract();
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.cookie(TOKEN)).isNotNull();
+        return response.cookie(TOKEN);
+    }
+
+    protected Long joinAndGetMemberId() {
 
         //given
         Map<String, Object> member = new HashMap<>();
@@ -45,55 +118,10 @@ public class MemberTest {
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.jsonPath().getString(NAME)).isEqualTo("박민욱");
+        return response.jsonPath().getLong(ID);
     }
 
-
-    @Test
-    void 아이디와_비밀번호로_로그인을_하고_쿠키를_전달_받는다() {
-
-        회원가입을_한다();
-        Map<String, Object> member = new HashMap<>();
-        member.put(EMAIL, "test@naver.com");
-        member.put(PASSWORD, "password123");
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .contentType(ContentType.JSON)
-                .body(member)
-                .when().post("/login")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.cookie(TOKEN)).isNotNull();
-        token = response.cookie(TOKEN);
-    }
-
-    @Test
-    void 쿠키의_토큰을_이용해서_사용자_정보를_조회_및_전달_할_수_있다() {
-
-        //given
-        아이디와_비밀번호로_로그인을_하고_쿠키를_전달_받는다();
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .contentType(ContentType.JSON)
-                .cookie(TOKEN, token)
-                .when().get("/login/check")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.jsonPath().getString(NAME)).isEqualTo("박민욱");
-    }
-
-    @Test
-    void 관리자_권한을_받을_수_있다() {
-
-        //given
-        아이디와_비밀번호로_로그인을_하고_쿠키를_전달_받는다();
+    protected void grantAdminRole(String token) {
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()

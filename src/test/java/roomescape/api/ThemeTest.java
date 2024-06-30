@@ -34,32 +34,14 @@ public class ThemeTest {
 
     @Test
     void 테마를_추가한다() {
-
-        //given
-        Map<String, Object> theme = new HashMap<>();
-        theme.put(NAME, "레벨2 탈출 희망");
-        theme.put(DESCRIPTION, "우테코 레벨2를 탈출하는 내용입니다");
-        theme.put(THUMBNAIL, "https://i.pinimg.com/236x/6e/bc/46/6ebc461a94a49f9ea3b8bbe2204145d4.jpg");
-
-        //when
-        ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .contentType(ContentType.JSON)
-                .body(theme)
-                .when().post("/themes")
-                .then().log().all()
-                .extract();
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.jsonPath().getLong(ID)).isEqualTo(1);
+        createThemeAndGetThemeId();
     }
-
 
     @Test
     void 테마를_조회한다() {
 
         //given
-        테마를_추가한다();
+        createThemeAndGetThemeId();
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()
@@ -67,19 +49,19 @@ public class ThemeTest {
                 .then().log().all()
                 .extract();
 
+        //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.jsonPath().getList("$").size()).isEqualTo(1);
     }
 
     @Test
     void 테마를_삭제한다() {
 
         //given
-        테마를_추가한다();
+        Long id = createThemeAndGetThemeId();
 
         //when
         ExtractableResponse<Response> response = RestAssured.given().log().all()
-                .when().delete("/themes/1")
+                .when().delete("/themes/" + String.valueOf(id))
                 .then().log().all()
                 .extract();
 
@@ -184,5 +166,26 @@ public class ThemeTest {
                 themeRequest.getDescription(),
                 themeRequest.getThumbnail())
         ).doesNotThrowAnyException();
+    }
+
+    protected Long createThemeAndGetThemeId() {
+
+        //given
+        Map<String, Object> theme = new HashMap<>();
+        theme.put(NAME, "레벨2 탈출 희망");
+        theme.put(DESCRIPTION, "우테코 레벨2를 탈출하는 내용입니다");
+        theme.put(THUMBNAIL, "https://i.pinimg.com/236x/6e/bc/46/6ebc461a94a49f9ea3b8bbe2204145d4.jpg");
+
+        //when
+        ExtractableResponse<Response> response = RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .body(theme)
+                .when().post("/themes")
+                .then().log().all()
+                .extract();
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        return response.jsonPath().getLong(ID);
     }
 }

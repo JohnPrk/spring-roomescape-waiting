@@ -22,6 +22,7 @@ public class Reservation {
     @JoinColumn(name = "time_id")
     private Time time;
 
+
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;

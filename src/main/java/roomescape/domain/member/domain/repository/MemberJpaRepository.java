@@ -28,6 +28,7 @@ public class MemberJpaRepository implements MemberRepository {
     public Optional<Member> findByEmailAndPassword(String email, String password) {
         TypedQuery<Member> query = entityManager.createQuery(
                 "SELECT m FROM Member m WHERE m.email = :email AND m.password = :password", Member.class);
+
         query.setParameter(EMAIL, email);
         query.setParameter(PASSWORD, password);
         List<Member> result = query.getResultList();

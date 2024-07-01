@@ -68,6 +68,7 @@ public class ReservationJdbcRepository implements ReservationRepository {
             INNER JOIN member m
                 ON r.member_id = m.id;
             """;
+
     private static final String FIND_BY_MEMBER_ID_SQL = """
             SELECT
                 r.id AS reservation_id,

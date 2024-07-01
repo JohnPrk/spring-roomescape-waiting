@@ -1,10 +1,12 @@
 package roomescape.domain.member.domain;
 
+
 import jakarta.persistence.*;
 import roomescape.domain.reservation.domain.Reservation;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 @Entity
 public class Member {

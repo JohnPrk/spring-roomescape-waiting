@@ -1,6 +1,7 @@
 package roomescape.domain.reservation.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.time.domain.Time;
@@ -13,6 +14,8 @@ public class Reservation {
     private Long id;
     private String name;
     private String date;
+    @ColumnDefault("'예약'")
+    private String status;
 
     @OneToOne
     @JoinColumn(name = "theme_id")
@@ -49,6 +52,10 @@ public class Reservation {
 
     public String getDate() {
         return date;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public Theme getTheme() {

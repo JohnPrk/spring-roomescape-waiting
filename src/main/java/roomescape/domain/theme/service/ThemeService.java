@@ -3,11 +3,11 @@ package roomescape.domain.theme.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.theme.domain.Theme;
-import roomescape.domain.theme.domain.repository.ThemeJpaRepository;
 import roomescape.domain.theme.domain.repository.ThemeRepository;
 import roomescape.domain.theme.error.exception.ThemeErrorCode;
 import roomescape.domain.theme.error.exception.ThemeException;
 import roomescape.domain.theme.service.dto.ThemeRequest;
+import roomescape.domain.theme.service.dto.ThemeResponse;
 
 import java.util.List;
 
@@ -21,10 +21,11 @@ public class ThemeService {
     }
 
     @Transactional
-    public Theme save(ThemeRequest themeRequest) {
+    public ThemeResponse save(ThemeRequest themeRequest) {
         Theme theme = new Theme(null, themeRequest.getName(), themeRequest.getDescription(), themeRequest.getThumbnail());
         Long id = themeRepository.save(theme);
-        return findById(id);
+        Theme savedTheme = findById(id);
+        return mapToThemeResponseDto(savedTheme);
     }
 
     @Transactional(readOnly = true)
@@ -33,13 +34,23 @@ public class ThemeService {
     }
 
     @Transactional(readOnly = true)
-    public List<Theme> findAll() {
-        return themeRepository.findAll();
+    public List<ThemeResponse> findAll() {
+        List<Theme> themes = themeRepository.findAll();
+        return themes.stream().map(this::mapToThemeResponseDto).toList();
     }
 
     @Transactional
     public void delete(Long id) {
         Theme theme = findById(id);
         themeRepository.delete(theme);
+    }
+
+    private ThemeResponse mapToThemeResponseDto(Theme theme) {
+        return new ThemeResponse(
+                theme.getId(),
+                theme.getName(),
+                theme.getDescription(),
+                theme.getThumbnail()
+        );
     }
 }

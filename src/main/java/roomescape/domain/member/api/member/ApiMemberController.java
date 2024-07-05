@@ -23,24 +23,19 @@ public class ApiMemberController {
 
     @PostMapping
     public ResponseEntity<MemberResponse> save(@RequestBody MemberRequest memberRequest) {
-        Member member = memberService.save(memberRequest);
-        return ResponseEntity.ok().body(new MemberResponse(member.getId(), member.getName()));
+        MemberResponse savedMemberResponse = memberService.save(memberRequest);
+        return ResponseEntity.ok().body(savedMemberResponse);
     }
 
     @GetMapping
     public ResponseEntity<List<MemberResponse>> findAll() {
-        List<Member> members = memberService.findAll();
-        List<MemberResponse> memberResponses = members.stream().map(member -> new MemberResponse(member.getId(), member.getName())).toList();
-        return ResponseEntity.ok().body(memberResponses);
+        List<MemberResponse> memberResponseList = memberService.findAll();
+        return ResponseEntity.ok().body(memberResponseList);
     }
 
     @PostMapping("/role")
     public ResponseEntity<AdminMemberResponse> updateAdminRole(@Login Member loginMember) {
-        Member member = memberService.updateAdminRole(loginMember.getId());
-        return ResponseEntity.ok().body(
-                new AdminMemberResponse(
-                        member.getId(),
-                        member.getName(),
-                        member.getRole()));
+        AdminMemberResponse adminMemberResponse = memberService.updateAdminRole(loginMember.getId());
+        return ResponseEntity.ok().body(adminMemberResponse);
     }
 }

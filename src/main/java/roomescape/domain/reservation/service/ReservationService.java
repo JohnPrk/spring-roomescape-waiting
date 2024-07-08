@@ -26,8 +26,6 @@ import static roomescape.utils.FormatCheckUtil.reservationNameFormatCheck;
 @Service
 public class ReservationService {
 
-    private static final String RESERVED = "예약";
-
     private final TimeService timeService;
     private final ThemeService themeService;
     private final MemberService memberService;
@@ -97,7 +95,7 @@ public class ReservationService {
                 reservation.getId(),
                 reservation.getName(),
                 reservation.getDate(),
-                reservation.getStatus(),
+                Status.findByDescription(reservation.getStatus()),
                 reservation.getTime(),
                 reservation.getTheme(),
                 reservation.getMember());

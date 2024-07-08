@@ -99,6 +99,7 @@ public class ReservationJdbcRepository implements ReservationRepository {
     private static final String RESERVATION_ID = "reservation_id";
     private static final String RESERVATION_NAME = "reservation_name";
     private static final String RESERVATION_DATE = "reservation_date";
+    private static final String RESERVATION_STATUS = "reservation_status";
     private static final String TIME_ID = "reservation_time_id";
     private static final String TIME_START_AT = "reservation_time_start_at";
     private static final String THEME_ID = "theme_id";
@@ -161,6 +162,7 @@ public class ReservationJdbcRepository implements ReservationRepository {
                         rs.getLong(RESERVATION_ID),
                         rs.getString(RESERVATION_NAME),
                         rs.getString(RESERVATION_DATE),
+                        rs.getString(RESERVATION_STATUS),
                         new Theme(
                                 rs.getLong(THEME_ID),
                                 rs.getString(THEME_NAME),

@@ -13,7 +13,6 @@ public class Reservation {
     private Long id;
     private String name;
     private String date;
-    @ColumnDefault("'예약'")
     private String status;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
@@ -29,13 +28,14 @@ public class Reservation {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public Reservation(Long id, String name, String date, Theme theme, Time time, Member member) {
+    public Reservation(Long id, String name, String date, String status, Theme theme, Time time, Member member) {
         this.id = id;
         this.name = name;
         this.date = date;
         this.theme = theme;
         this.time = time;
         this.member = member;
+        this.status = status;
     }
 
     public Reservation() {

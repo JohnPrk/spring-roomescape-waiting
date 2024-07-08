@@ -12,8 +12,10 @@ spring:
         show-sql: true
         format_sql: true
         highlight_sql: true
-        ddl-auto: create
+        ddl-auto: create-drop
   sql:
     init:
       mode: always
-    ddl-auto: create-drop
+logging:
+  level:
+    org.hibernate.SQL: debug

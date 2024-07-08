@@ -11,6 +11,8 @@ import roomescape.domain.theme.service.dto.ThemeResponse;
 
 import java.util.List;
 
+import static roomescape.domain.theme.utils.FormatCheckUtil.*;
+
 @Service
 public class ThemeService {
 
@@ -22,6 +24,7 @@ public class ThemeService {
 
     @Transactional
     public ThemeResponse save(ThemeRequest themeRequest) {
+        validationCheck(themeRequest.getName(), themeRequest.getDescription(), themeRequest.getThumbnail());
         Theme theme = new Theme(null, themeRequest.getName(), themeRequest.getDescription(), themeRequest.getThumbnail());
         Long id = themeRepository.save(theme);
         Theme savedTheme = findById(id);
@@ -43,6 +46,12 @@ public class ThemeService {
     public void delete(Long id) {
         Theme theme = findById(id);
         themeRepository.delete(theme);
+    }
+
+    private static void validationCheck(String name, String description, String thumbnail) {
+        themeNameFormatCheck(name);
+        themeDescriptionCheck(description);
+        themeThumbnailFormatCheck(thumbnail);
     }
 
     private ThemeResponse mapToThemeResponseDto(Theme theme) {

@@ -11,6 +11,8 @@ import roomescape.domain.time.service.dto.TimeResponse;
 
 import java.util.List;
 
+import static roomescape.domain.time.utils.FormatCheckUtil.startAtFormatCheck;
+
 @Service
 public class TimeService {
 
@@ -22,6 +24,7 @@ public class TimeService {
 
     @Transactional
     public TimeResponse save(TimeRequest timeRequest) {
+        validationCheck(timeRequest.getStartAt());
         Time time = new Time(null, timeRequest.getStartAt());
         Long id = timeRepository.save(time);
         Time savedTime = findById(id);
@@ -49,6 +52,10 @@ public class TimeService {
     public List<TimeResponse> findByThemeIdAndDate(String themeId, String date) {
         List<Time> times = timeRepository.findByThemeIdAndDate(themeId, date);
         return times.stream().map(this::mapToTimeResponseDto).toList();
+    }
+
+    private void validationCheck(String startAt) {
+        startAtFormatCheck(startAt);
     }
 
     private TimeResponse mapToTimeResponseDto(Time time) {

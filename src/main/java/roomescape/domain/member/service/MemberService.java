@@ -16,6 +16,8 @@ import roomescape.domain.member.service.dto.MemberResponse;
 
 import java.util.List;
 
+import static roomescape.domain.member.utils.FormatCheckUtil.*;
+
 @Service
 public class MemberService {
 
@@ -44,6 +46,7 @@ public class MemberService {
 
     @Transactional
     public MemberResponse save(MemberRequest memberRequest) {
+        validationCheck(memberRequest.getName(), memberRequest.getEmail(), memberRequest.getPassword());
         Long id = memberRepository.save(new Member(null, memberRequest.getName(), memberRequest.getEmail(), memberRequest.getPassword(), Role.USER.getRole()));
         Member member = findById(id);
         return mapToMemberResponseDto(member);

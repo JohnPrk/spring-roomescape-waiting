@@ -19,9 +19,9 @@ import roomescape.domain.time.service.TimeService;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static roomescape.utils.DateTimeCheckUtil.isBeforeCheck;
-import static roomescape.utils.FormatCheckUtil.reservationDateFormatCheck;
-import static roomescape.utils.FormatCheckUtil.reservationNameFormatCheck;
+import static roomescape.domain.reservation.utils.DateTimeCheckUtil.isBeforeCheck;
+import static roomescape.domain.reservation.utils.FormatCheckUtil.reservationDateFormatCheck;
+import static roomescape.domain.reservation.utils.FormatCheckUtil.reservationNameFormatCheck;
 
 @Service
 public class ReservationService {
@@ -43,8 +43,8 @@ public class ReservationService {
         Time time = timeService.findById(reservationRequest.getTimeId());
         Theme theme = themeService.findById(reservationRequest.getThemeId());
         validationCheck(reservationRequest.getName(), reservationRequest.getDate(), time);
-        Reservation reservation = new Reservation(null, reservationRequest.getName(), reservationRequest.getDate(), theme, time, loginMember);
-        loginMember.addReservation(reservation);
+        Reservation reservation = new Reservation(null, reservationRequest.getName(), reservationRequest.getDate(), reservationRequest.getStatus(), theme, time, null);
+        loginMember.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
         return mapToReservationResponseDto(savedReservation);
@@ -55,8 +55,8 @@ public class ReservationService {
         Time time = timeService.findById(adminReservationRequest.getTimeId());
         Theme theme = themeService.findById(adminReservationRequest.getThemeId());
         Member member = memberService.findById(adminReservationRequest.getMemberId());
-        Reservation reservation = new Reservation(null, member.getName(), adminReservationRequest.getDate(), theme, time, member);
-        member.addReservation(reservation);
+        Reservation reservation = new Reservation(null, member.getName(), adminReservationRequest.getDate(), adminReservationRequest.getStatus(), theme, time, member);
+        member.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
         return mapToReservationResponseDto(savedReservation);

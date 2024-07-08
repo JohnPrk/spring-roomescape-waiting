@@ -1,37 +1,27 @@
 package roomescape.util;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import roomescape.domain.reservation.error.exception.ReservationException;
 import roomescape.domain.reservation.error.exception.ReservationErrorCode;
+import roomescape.domain.reservation.error.exception.ReservationException;
+import roomescape.domain.reservation.utils.DateTimeCheckUtil;
+import roomescape.domain.reservation.utils.FormatCheckUtil;
 import roomescape.domain.time.error.exception.TimeErrorCode;
 import roomescape.domain.time.error.exception.TimeException;
-import roomescape.utils.FormatCheckUtil;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class UtilTest {
+public class ReservationUtilTest {
 
-    @ParameterizedTest
-    @ValueSource(strings = {"24:01", "-1:32", "12;30", "01:61"})
-    void 시간_형식이_맞지_않는_경우_예외를_발생시킨다(String startAt) {
-
-        //when, then
-        assertThatThrownBy(() -> FormatCheckUtil.startAtFormatCheck(startAt)).isInstanceOf(TimeException.class).hasMessage(TimeErrorCode.INVALID_TIME_FORMAT_ERROR.getErrorMessage());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"00:00", "12:00", "23:59"})
-    void 시간_형식이_맞는_경우_예외가_발생하지_않는다(String startAt) {
-
-        //when, then
-        assertThatCode(() -> FormatCheckUtil.startAtFormatCheck(startAt)).doesNotThrowAnyException();
-    }
+    private static final String 현재_날짜 = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    private static final String 현재_시간_5분_뒤_시간 = LocalTime.now().plusMinutes(5L).format(DateTimeFormatter.ofPattern("HH:mm"));
+    private static final String 현재_시간_5분_전_시간 = LocalTime.now().minusMinutes(10L).format(DateTimeFormatter.ofPattern("HH:mm"));
 
     @ParameterizedTest
     @ValueSource(strings = {"가", "a", "가나다라마바사아자차카타파하거너더러머버서"})
@@ -41,7 +31,6 @@ public class UtilTest {
         assertThatThrownBy(() -> FormatCheckUtil.reservationNameFormatCheck(wrongNameExample)
         ).isInstanceOf(ReservationException.class)
                 .hasMessage(ReservationErrorCode.INVALID_RESERVATION_NAME_FORMAT_ERROR.getErrorMessage());
-
     }
 
     @ParameterizedTest
@@ -49,8 +38,7 @@ public class UtilTest {
     void 예약_생성_중에_이름의_형식이_맞는_경우_예외를_발생하지_않는다(String rightNameExample) {
 
         //when, then
-        assertThatCode(() -> FormatCheckUtil.reservationNameFormatCheck(rightNameExample)
-        ).doesNotThrowAnyException();
+        assertThatCode(() -> FormatCheckUtil.reservationNameFormatCheck(rightNameExample)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
@@ -70,5 +58,21 @@ public class UtilTest {
         //when, then
         assertThatCode(() -> FormatCheckUtil.reservationDateFormatCheck(rightDateExample)
         ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void 예약_하려는_날짜와_시간이_현재_날짜와_시간_보다_이_전이면_예외를_발생시킨다() {
+
+        //when, then
+        assertThatThrownBy(() -> DateTimeCheckUtil.isBeforeCheck(현재_날짜, 현재_시간_5분_전_시간))
+                .isInstanceOf(TimeException.class)
+                .hasMessage(TimeErrorCode.IS_BEFORE_ERROR.getErrorMessage());
+    }
+
+    @Test
+    void 예약_하려는_날짜와_시간이_현재_날짜와_시간_보다_이_후이면_예외가_발생되지_않는다() {
+
+        //when, then
+        assertThatCode(() -> DateTimeCheckUtil.isBeforeCheck(현재_날짜, 현재_시간_5분_뒤_시간)).doesNotThrowAnyException();
     }
 }

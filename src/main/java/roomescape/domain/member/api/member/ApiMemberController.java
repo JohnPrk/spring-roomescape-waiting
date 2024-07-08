@@ -2,10 +2,7 @@ package roomescape.domain.member.api.member;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import roomescape.argumentResolver.annotation.Login;
-import roomescape.domain.member.domain.Member;
 import roomescape.domain.member.service.MemberService;
-import roomescape.domain.member.service.dto.AdminMemberResponse;
 import roomescape.domain.member.service.dto.MemberRequest;
 import roomescape.domain.member.service.dto.MemberResponse;
 
@@ -31,11 +28,5 @@ public class ApiMemberController {
     public ResponseEntity<List<MemberResponse>> findAll() {
         List<MemberResponse> memberResponseList = memberService.findAll();
         return ResponseEntity.ok().body(memberResponseList);
-    }
-
-    @PostMapping("/role")
-    public ResponseEntity<AdminMemberResponse> updateAdminRole(@Login Member loginMember) {
-        AdminMemberResponse adminMemberResponse = memberService.updateAdminRole(loginMember.getId());
-        return ResponseEntity.ok().body(adminMemberResponse);
     }
 }

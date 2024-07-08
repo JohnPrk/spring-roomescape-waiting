@@ -79,6 +79,12 @@ public class MemberService {
                 .compact();
     }
 
+    private void validationCheck(String name, String email, String password) {
+        memberNameFormatCheck(name);
+        memberEmailFormatCheck(email);
+        memberPasswordFormatCheck(password);
+    }
+
     private Long decode(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))

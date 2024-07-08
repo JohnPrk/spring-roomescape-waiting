@@ -19,7 +19,7 @@ public class Member {
     private String password;
     private String role;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
 
     public Member(Long id, String name, String email, String password, String role) {
@@ -61,7 +61,8 @@ public class Member {
         return role;
     }
 
-    public void addReservation(Reservation reservation) {
+    public void connectWith(Reservation reservation) {
         reservations.add(reservation);
+        reservation.connectWith(this);
     }
 }

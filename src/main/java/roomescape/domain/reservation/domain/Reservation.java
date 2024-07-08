@@ -1,7 +1,6 @@
 package roomescape.domain.reservation.domain;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.ColumnDefault;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.time.domain.Time;
@@ -17,11 +16,11 @@ public class Reservation {
     @ColumnDefault("'예약'")
     private String status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "theme_id")
     private Theme theme;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "time_id")
     private Time time;
 
@@ -68,5 +67,9 @@ public class Reservation {
 
     public Member getMember() {
         return member;
+    }
+
+    public void connectWith(Member member) {
+        this.member = member;
     }
 }

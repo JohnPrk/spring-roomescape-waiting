@@ -47,6 +47,7 @@ public class ReservationService {
         loginMember.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
+        savedReservation.getTime().reserved();
         return mapToReservationResponseDto(savedReservation);
     }
 
@@ -59,6 +60,7 @@ public class ReservationService {
         member.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
+        savedReservation.getTime().reserved();
         return mapToReservationResponseDto(savedReservation);
     }
 

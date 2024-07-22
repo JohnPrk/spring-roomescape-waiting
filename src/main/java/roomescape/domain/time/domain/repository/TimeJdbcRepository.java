@@ -16,21 +16,17 @@ import java.util.Optional;
 public class TimeJdbcRepository implements TimeRepository {
 
     private static final String FIND_BY_THEME_ID_AND_DATE_SQL = """
-            SELECT rt.id, rt.start_at
+            SELECT rt.id, rt.start_at, rt.status
             FROM reservation_time rt
-            WHERE NOT EXISTS (
-                SELECT 1
-                FROM reservation r
-                WHERE r.date = ?
-                AND r.theme_id = ?
-                AND r.time_id = rt.id)
+            LEFT JOIN reservation r ON rt.id = r.time_id AND r.date = ? AND r.theme_id = ?
             """;
-    private static final String SAVE_SQL = "INSERT INTO reservation_time (start_at) VALUES (?);";
+    private static final String SAVE_SQL = "INSERT INTO reservation_time (start_at, status) VALUES (?, ?);";
     private static final String FIND_BY_ID_SQL = "SELECT * FROM reservation_time WHERE id = ?;";
     private static final String FIND_ALL_SQL = "SELECT * FROM reservation_time";
     private static final String DELETE_SQL = "DELETE FROM reservation_time WHERE id = ?;";
     private static final String ID = "id";
     private static final String START_AT = "start_at";
+    private static final String STATUS = "status";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -44,6 +40,7 @@ public class TimeJdbcRepository implements TimeRepository {
         jdbcTemplate.update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_SQL, new String[]{ID});
             preparedStatement.setString(1, time.getStartAt());
+            preparedStatement.setBoolean(2, time.isReserved());
             return preparedStatement;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
@@ -73,7 +70,8 @@ public class TimeJdbcRepository implements TimeRepository {
         return (rs, rowNum) ->
                 new Time(
                         rs.getLong(ID),
-                        rs.getString(START_AT)
+                        rs.getString(START_AT),
+                        rs.getBoolean(STATUS)
                 );
     }
 }

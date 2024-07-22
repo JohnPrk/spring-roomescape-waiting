@@ -12,10 +12,12 @@ public class Time {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String startAt;
+    private boolean reserved;
 
-    public Time(Long id, String startAt) {
+    public Time(Long id, String startAt, boolean reserved) {
         this.id = id;
         this.startAt = startAt;
+        this.reserved = reserved;
     }
 
     public Time() {
@@ -27,5 +29,13 @@ public class Time {
 
     public String getStartAt() {
         return startAt;
+    }
+
+    public boolean isReserved() {
+        return reserved;
+    }
+
+    public void reserved() {
+        this.reserved = true;
     }
 }

@@ -15,11 +15,7 @@ public class TimeJpaRepository implements TimeRepository {
 
     private static final String FIND_BY_THEME_ID_AND_DATE_SQL = """
             SELECT t FROM Time t
-            WHERE t.id NOT IN (
-                SELECT r.time.id
-                FROM Reservation r
-                WHERE r.theme.id = :themeId
-                AND r.date = :date)
+            left join Reservation r on r.time.id = t.id AND r.theme.id = :themeId AND r.date = :date
             """;
     private static final String THEME_ID = "themeId";
     private static final String DATE = "date";

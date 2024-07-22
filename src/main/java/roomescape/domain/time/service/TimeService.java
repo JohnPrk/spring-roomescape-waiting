@@ -25,7 +25,7 @@ public class TimeService {
     @Transactional
     public TimeResponse save(TimeRequest timeRequest) {
         validationCheck(timeRequest.getStartAt());
-        Time time = new Time(null, timeRequest.getStartAt());
+        Time time = new Time(null, timeRequest.getStartAt(), false);
         Long id = timeRepository.save(time);
         Time savedTime = findById(id);
         return mapToTimeResponseDto(savedTime);
@@ -61,7 +61,7 @@ public class TimeService {
     private TimeResponse mapToTimeResponseDto(Time time) {
         return new TimeResponse(
                 time.getId(),
-                time.getStartAt()
-        );
+                time.getStartAt(),
+                time.isReserved());
     }
 }

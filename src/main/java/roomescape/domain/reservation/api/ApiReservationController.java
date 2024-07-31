@@ -7,6 +7,8 @@ import roomescape.domain.member.domain.Member;
 import roomescape.domain.reservation.service.ReservationService;
 import roomescape.domain.reservation.service.dto.ReservationRequest;
 import roomescape.domain.reservation.service.dto.ReservationResponse;
+import roomescape.domain.reservation.service.dto.ReservationWaitRequest;
+import roomescape.domain.waiting.service.dto.WaitingResponse;
 
 import java.util.List;
 
@@ -36,6 +38,12 @@ public class ApiReservationController {
     public ResponseEntity<ReservationResponse> save(@Login Member loginMember, @RequestBody ReservationRequest reservationRequest) {
         ReservationResponse reservationResponse = reservationService.save(reservationRequest, loginMember);
         return ResponseEntity.ok().body(reservationResponse);
+    }
+
+    @PostMapping("/wait")
+    public ResponseEntity<WaitingResponse> waitForReservation(@Login Member loginMember, @RequestBody ReservationWaitRequest reservationRequest) {
+        WaitingResponse waitingResponse = reservationService.waitForReservation(reservationRequest, loginMember);
+        return ResponseEntity.ok().body(waitingResponse);
     }
 
     @DeleteMapping("/{id}")

@@ -15,14 +15,13 @@ public class Reservation {
     private String date;
     private String status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToOne
     @JoinColumn(name = "time_id")
     private Time time;
-
 
     @ManyToOne
     @JoinColumn(name = "member_id")

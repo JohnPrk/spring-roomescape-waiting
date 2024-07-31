@@ -1,0 +1,46 @@
+package roomescape.domain.waiting.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import roomescape.domain.member.domain.Member;
+import roomescape.domain.theme.domain.Theme;
+import roomescape.domain.time.domain.Time;
+import roomescape.domain.waiting.domain.Waiting;
+import roomescape.domain.waiting.domain.WaitingRank;
+import roomescape.domain.waiting.domain.repository.WaitingRepository;
+import roomescape.domain.waiting.service.dto.WaitingResponse;
+
+import java.util.List;
+
+@Service
+public class WaitingService {
+
+    private final WaitingRepository waitingRepository;
+
+    public WaitingService(WaitingRepository waitingRepository) {
+        this.waitingRepository = waitingRepository;
+    }
+
+    @Transactional
+    public WaitingResponse save(Time time, Theme theme, Member loginMember, String date) {
+        Waiting waiting = new Waiting(null, theme, loginMember, time, date);
+        Waiting savedWaiting = waitingRepository.save(waiting);
+        Waiting findWaiting = waitingRepository.findById(savedWaiting.getId()).orElseThrow(() -> new IllegalArgumentException());
+        return mapToWaitingResponseDto(findWaiting);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WaitingRank> findWaitingRankByMemberId(Long memberId) {
+        return waitingRepository.findWaitingRankByMemberId(memberId);
+    }
+
+    private WaitingResponse mapToWaitingResponseDto(Waiting waiting) {
+        return new WaitingResponse(
+                waiting.getId(),
+                waiting.getTheme(),
+                waiting.getMember(),
+                waiting.getTime(),
+                waiting.getDate());
+
+    }
+}

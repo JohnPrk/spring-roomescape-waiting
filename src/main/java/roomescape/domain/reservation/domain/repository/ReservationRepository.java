@@ -1,5 +1,6 @@
 package roomescape.domain.reservation.domain.repository;
 
+import org.springframework.data.repository.query.Param;
 import roomescape.domain.reservation.domain.Reservation;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface ReservationRepository {
 
     void delete(Reservation reservation);
 
-    List<Reservation> findAllByMemberId(Long id);
+    List<Reservation> findAllByMemberId(@Param("memberId") Long memberId);
 }

@@ -11,11 +11,16 @@ import roomescape.domain.reservation.error.exception.ReservationException;
 import roomescape.domain.reservation.service.dto.AdminReservationRequest;
 import roomescape.domain.reservation.service.dto.ReservationRequest;
 import roomescape.domain.reservation.service.dto.ReservationResponse;
+import roomescape.domain.reservation.service.dto.ReservationWaitRequest;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.theme.service.ThemeService;
 import roomescape.domain.time.domain.Time;
 import roomescape.domain.time.service.TimeService;
+import roomescape.domain.waiting.domain.WaitingRank;
+import roomescape.domain.waiting.service.WaitingService;
+import roomescape.domain.waiting.service.dto.WaitingResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +34,14 @@ public class ReservationService {
     private final TimeService timeService;
     private final ThemeService themeService;
     private final MemberService memberService;
+    private final WaitingService waitingService;
     private final ReservationRepository reservationRepository;
 
-    public ReservationService(TimeService timeService, ThemeService themeService, MemberService memberService, ReservationRepository reservationRepository) {
+    public ReservationService(TimeService timeService, ThemeService themeService, MemberService memberService, WaitingService waitingService, ReservationRepository reservationRepository) {
         this.timeService = timeService;
         this.themeService = themeService;
         this.memberService = memberService;
+        this.waitingService = waitingService;
         this.reservationRepository = reservationRepository;
     }
 
@@ -47,8 +54,15 @@ public class ReservationService {
         loginMember.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
-        savedReservation.getTime().reserved();
         return mapToReservationResponseDto(savedReservation);
+    }
+
+    @Transactional
+    public WaitingResponse waitForReservation(ReservationWaitRequest reservationRequest, Member loginMember) {
+        Time time = timeService.findById(reservationRequest.getTimeId());
+        Theme theme = themeService.findById(reservationRequest.getThemeId());
+        validationCheck(loginMember.getName(), reservationRequest.getDate(), time);
+        return waitingService.save(time, theme, loginMember, reservationRequest.getDate());
     }
 
     @Transactional
@@ -60,7 +74,6 @@ public class ReservationService {
         member.connectWith(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
-        savedReservation.getTime().reserved();
         return mapToReservationResponseDto(savedReservation);
     }
 
@@ -77,7 +90,14 @@ public class ReservationService {
 
     public List<ReservationResponse> findAllByMemberId(Long id) {
         List<Reservation> reservations = reservationRepository.findAllByMemberId(id);
-        return reservations.stream().map(this::mapToReservationResponseDto).toList();
+        if (reservations.isEmpty()) {
+            reservations = new ArrayList<>();
+        }
+        List<WaitingRank> waitingRanks = waitingService.findWaitingRankByMemberId(id);
+        reservations.addAll(waitingRanks.stream()
+                .map(waitingRank -> new Reservation(waitingRank.getWaiting().getId(), waitingRank.getWaiting().getMember().getName(), waitingRank.getWaiting().getDate(), waitingRank.getRank() + "번째 예약대기", waitingRank.getWaiting().getTheme(), waitingRank.getWaiting().getTime(), waitingRank.getWaiting().getMember())).toList());
+        return reservations.stream()
+                .map(this::mapToReservationResponseDto).toList();
     }
 
     @Transactional
@@ -97,7 +117,7 @@ public class ReservationService {
                 reservation.getId(),
                 reservation.getName(),
                 reservation.getDate(),
-                Status.findByDescription(reservation.getStatus()),
+                reservation.getStatus(),
                 reservation.getTime(),
                 reservation.getTheme(),
                 reservation.getMember());

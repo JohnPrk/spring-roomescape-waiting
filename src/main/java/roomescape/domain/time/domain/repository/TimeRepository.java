@@ -1,6 +1,7 @@
 package roomescape.domain.time.domain.repository;
 
 import roomescape.domain.time.domain.Time;
+import roomescape.domain.time.service.dto.TimeWithStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,5 +15,5 @@ public interface TimeRepository {
 
     void delete(Time time);
 
-    List<Time> findByThemeIdAndDate(String themeId, String date);
+    List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date);
 }

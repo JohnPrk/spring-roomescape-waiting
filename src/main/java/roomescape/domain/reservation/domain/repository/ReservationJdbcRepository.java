@@ -102,7 +102,6 @@ public class ReservationJdbcRepository implements ReservationRepository {
     private static final String RESERVATION_STATUS = "reservation_status";
     private static final String TIME_ID = "reservation_time_id";
     private static final String TIME_START_AT = "reservation_time_start_at";
-    private static final String TIME_STATUS = "reservation_time_status";
     private static final String THEME_ID = "theme_id";
     private static final String THEME_NAME = "theme_name";
     private static final String THEME_DESCRIPTION = "theme_description";
@@ -172,8 +171,7 @@ public class ReservationJdbcRepository implements ReservationRepository {
                         ),
                         new Time(
                                 rs.getLong(TIME_ID),
-                                rs.getString(TIME_START_AT),
-                                rs.getBoolean(TIME_STATUS)),
+                                rs.getString(TIME_START_AT)),
                         new Member(
                                 rs.getLong(MEMBER_ID),
                                 rs.getString(MEMBER_NAME),

@@ -8,6 +8,7 @@ import roomescape.domain.time.error.exception.TimeErrorCode;
 import roomescape.domain.time.error.exception.TimeException;
 import roomescape.domain.time.service.dto.TimeRequest;
 import roomescape.domain.time.service.dto.TimeResponse;
+import roomescape.domain.time.service.dto.TimeWithStatus;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class TimeService {
     @Transactional
     public TimeResponse save(TimeRequest timeRequest) {
         validationCheck(timeRequest.getStartAt());
-        Time time = new Time(null, timeRequest.getStartAt(), false);
+        Time time = new Time(null, timeRequest.getStartAt());
         Long id = timeRepository.save(time);
         Time savedTime = findById(id);
         return mapToTimeResponseDto(savedTime);
@@ -49,9 +50,8 @@ public class TimeService {
     }
 
     @Transactional(readOnly = true)
-    public List<TimeResponse> findByThemeIdAndDate(String themeId, String date) {
-        List<Time> times = timeRepository.findByThemeIdAndDate(themeId, date);
-        return times.stream().map(this::mapToTimeResponseDto).toList();
+    public List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date) {
+        return timeRepository.findByThemeIdAndDate(themeId, date);
     }
 
     private void validationCheck(String startAt) {
@@ -61,7 +61,6 @@ public class TimeService {
     private TimeResponse mapToTimeResponseDto(Time time) {
         return new TimeResponse(
                 time.getId(),
-                time.getStartAt(),
-                time.isReserved());
+                time.getStartAt());
     }
 }

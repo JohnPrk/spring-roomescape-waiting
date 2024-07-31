@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import roomescape.domain.time.domain.Time;
+import roomescape.domain.time.service.dto.TimeWithStatus;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -16,11 +17,13 @@ import java.util.Optional;
 public class TimeJdbcRepository implements TimeRepository {
 
     private static final String FIND_BY_THEME_ID_AND_DATE_SQL = """
-            SELECT rt.id, rt.start_at, rt.status
-            FROM reservation_time rt
-            LEFT JOIN reservation r ON rt.id = r.time_id AND r.date = ? AND r.theme_id = ?
+            SELECT 
+                t.id, t.start_at, CASE WHEN r.time_id IS NOT NULL THEN 'true' ELSE 'false' END AS status 
+            FROM time t
+            LEFT JOIN reservation r 
+                ON t.id = r.time_id AND r.date = ? AND r.theme_id = ?;
             """;
-    private static final String SAVE_SQL = "INSERT INTO reservation_time (start_at, status) VALUES (?, ?);";
+    private static final String SAVE_SQL = "INSERT INTO reservation_time (start_at) VALUES (?);";
     private static final String FIND_BY_ID_SQL = "SELECT * FROM reservation_time WHERE id = ?;";
     private static final String FIND_ALL_SQL = "SELECT * FROM reservation_time";
     private static final String DELETE_SQL = "DELETE FROM reservation_time WHERE id = ?;";
@@ -40,7 +43,6 @@ public class TimeJdbcRepository implements TimeRepository {
         jdbcTemplate.update(connection -> {
             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_SQL, new String[]{ID});
             preparedStatement.setString(1, time.getStartAt());
-            preparedStatement.setBoolean(2, time.isReserved());
             return preparedStatement;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
@@ -62,16 +64,24 @@ public class TimeJdbcRepository implements TimeRepository {
     }
 
     @Override
-    public List<Time> findByThemeIdAndDate(String themeId, String date) {
-        return jdbcTemplate.query(FIND_BY_THEME_ID_AND_DATE_SQL, timeRowMapper(), date, themeId);
+    public List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date) {
+        return jdbcTemplate.query(FIND_BY_THEME_ID_AND_DATE_SQL, timeWithStatusRowMapper(), date, themeId);
+    }
+
+    private RowMapper<TimeWithStatus> timeWithStatusRowMapper() {
+        return (rs, rowNum) ->
+                new TimeWithStatus(
+                        rs.getLong(ID),
+                        rs.getString(START_AT),
+                        rs.getString(STATUS)
+                );
     }
 
     private RowMapper<Time> timeRowMapper() {
         return (rs, rowNum) ->
                 new Time(
                         rs.getLong(ID),
-                        rs.getString(START_AT),
-                        rs.getBoolean(STATUS)
+                        rs.getString(START_AT)
                 );
     }
 }

@@ -23,4 +23,13 @@ public interface WaitingRepository extends JpaRepository<Waiting, Long> {
             "FROM Waiting w " +
             "WHERE w.member.id = :memberId")
     List<WaitingRank> findWaitingRankByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT CASE WHEN COUNT(w) > 0 THEN true ELSE false END FROM Waiting w " +
+            "WHERE w.member.id = :memberId AND w.time.id = :timeId AND w.theme.id = :themeId AND w.date = :date")
+    boolean existsByMemberIdAndTimeIdAndThemeIdAndDate(
+            @Param("memberId") Long memberId,
+            @Param("timeId") Long timeId,
+            @Param("themeId") Long themeId,
+            @Param("date") String date
+    );
 }

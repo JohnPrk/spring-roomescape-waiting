@@ -117,4 +117,25 @@ public class WaitingAcceptance {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(response.jsonPath().getString(ERROR_MESSAGES)).isEqualTo("[" + WaitingErrorCode.NOT_AUTHENTICATION_ERROR.getErrorMessage() + "]");
     }
+
+    /**
+     * given : @BeforeEach + 예약 생성 요청(같은 날짜와 같은 테마와 같은 시간대의 상대방 예약 * 1 + 나의 예약 대기  * 2)
+     * when : 이미 예약 대기 생성을 하고 동일한 조건의 예약 대기를 재 생성하려면
+     * then : 예외가 발생한다.
+     */
+    @Test
+    void 똑같은_조건의_예약_대기를_생성하려고_하면_예외가_발생한다() {
+
+        //given
+        예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations");
+        예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait");
+
+
+        //when
+        ExtractableResponse<Response> response = 예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait");
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.jsonPath().getString(ERROR_MESSAGES)).isEqualTo("[" + WaitingErrorCode.DUPLICATION_ERROR.getErrorMessage() + "]");
+    }
 }

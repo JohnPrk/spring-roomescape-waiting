@@ -8,6 +8,8 @@ import roomescape.domain.time.domain.Time;
 import roomescape.domain.waiting.domain.Waiting;
 import roomescape.domain.waiting.domain.WaitingRank;
 import roomescape.domain.waiting.domain.repository.WaitingRepository;
+import roomescape.domain.waiting.error.exception.WaitingErrorCode;
+import roomescape.domain.waiting.error.exception.WaitingException;
 import roomescape.domain.waiting.service.dto.WaitingResponse;
 
 import java.util.List;
@@ -25,13 +27,19 @@ public class WaitingService {
     public WaitingResponse save(Time time, Theme theme, Member loginMember, String date) {
         Waiting waiting = new Waiting(null, theme, loginMember, time, date);
         Waiting savedWaiting = waitingRepository.save(waiting);
-        Waiting findWaiting = waitingRepository.findById(savedWaiting.getId()).orElseThrow(() -> new IllegalArgumentException());
+        Waiting findWaiting = waitingRepository.findById(savedWaiting.getId()).orElseThrow(() -> new WaitingException(WaitingErrorCode.NO_WAITING_ERROR));
         return mapToWaitingResponseDto(findWaiting);
     }
 
     @Transactional(readOnly = true)
     public List<WaitingRank> findWaitingRankByMemberId(Long memberId) {
         return waitingRepository.findWaitingRankByMemberId(memberId);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Waiting deleteWaiting = waitingRepository.findById(id).orElseThrow(() -> new WaitingException(WaitingErrorCode.NO_WAITING_ERROR));
+        waitingRepository.delete(deleteWaiting);
     }
 
     private WaitingResponse mapToWaitingResponseDto(Waiting waiting) {
@@ -41,6 +49,5 @@ public class WaitingService {
                 waiting.getMember(),
                 waiting.getTime(),
                 waiting.getDate());
-
     }
 }

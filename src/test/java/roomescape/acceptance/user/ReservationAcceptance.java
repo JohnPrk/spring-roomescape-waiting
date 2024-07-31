@@ -29,6 +29,7 @@ public class ReservationAcceptance {
     private static final String ONE_HOUR_AHEAD_OF_THE_CURRENT_TIME = LocalTime.now().plusHours(1L).format(DateTimeFormatter.ofPattern("HH:mm"));
     private static final String ID = "id";
     private static final String TOKEN = "token";
+    private static final String STATUS = "status";
 
     private Long 공포_테마_아이디 = null;
     private Long 알쏭달쏭_테마_아이디 = null;
@@ -39,7 +40,6 @@ public class ReservationAcceptance {
     private String 첫_번째_사용자_토큰 = null;
     private String 두_번째_사용자_토큰 = null;
 
-
     /**
      * given: 예약 생성에 필요한 테마, 예약 시간 및 사용자 생성을 요청한다.
      */
@@ -49,6 +49,7 @@ public class ReservationAcceptance {
         //given
         회원가입_요청("uo5234@naver.com", "Password12!", "박민욱", "/members").jsonPath().getLong(ID);
         회원가입_요청("orange@naver.com", "Orange12@", "우주황", "/members").jsonPath().getLong(ID);
+        회원가입_요청("picachu@naver.com", "Picachu12@", "김성찬", "/members").jsonPath().getLong(ID);
         첫_번째_사용자_토큰 = 로그인_요청("uo5234@naver.com", "Password12!", "/login").cookie(TOKEN);
         두_번째_사용자_토큰 = 로그인_요청("orange@naver.com", "Orange12@", "/login").cookie(TOKEN);
         공포_테마_아이디 = 테마_생성_요청("오싹 공포 테마", "오싹 그잡채", "https://youtube.com/fear", "/themes").jsonPath().getLong(ID);
@@ -133,5 +134,47 @@ public class ReservationAcceptance {
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.jsonPath().getList("$").size()).isEqualTo(2);
+    }
+
+    /**
+     * given : @BeforeEach + 예약 생성 요청(같은 날짜와 같은 테마와 같은 시간대의 상대방 예약 * 1)
+     * when : 이미 예약이 완료된 예약 시간에 예약 대기 요청을 하면
+     * then : 200 상태코드와를 예약 아이디(웨이팅 아이디)를 검증할 수 있다.
+     */
+    @Test
+    void 예약이_이미_있는_경우_예약_대기를_할_수_있다() {
+
+        //given
+        예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations").jsonPath().getLong(ID);
+
+        //when
+        ExtractableResponse<Response> response = 예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait");
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.jsonPath().getLong(ID)).isNotNull();
+    }
+
+    /**
+     * given : @BeforeEach + 예약 생성 요청(같은 날짜와 같은 테마와 같은 시간대의 상대방 예약 * 1 + 나의 예약 대기  * 1)
+     * when : 예약 대기 중인 나의 예약과 예약이 완료된 상대방의 예약을 조회하면
+     * then : 200 상태코드와를 예약 or '몇 번째 예약대기'인지를 검증할 수 있다.
+     */
+    @Test
+    void 예약과_예약_대기를_조회할_수_있다() {
+
+        //given
+        예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations").jsonPath().getLong(ID);
+        예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
+
+        //when
+        ExtractableResponse<Response> reservedResponse = 내_예약_조회_요청(첫_번째_사용자_토큰, "/reservations/mine");
+        ExtractableResponse<Response> reserveWaitingResponse = 내_예약_조회_요청(두_번째_사용자_토큰, "/reservations/mine");
+
+        //then
+        assertThat(reservedResponse.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(reserveWaitingResponse.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(reservedResponse.jsonPath().getString(STATUS)).isEqualTo("[예약]");
+        assertThat(reserveWaitingResponse.jsonPath().getString(STATUS)).isEqualTo("[1번째 예약대기]");
     }
 }

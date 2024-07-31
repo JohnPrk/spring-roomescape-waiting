@@ -28,6 +28,17 @@ public class ReservationRestAssured {
                 .extract();
     }
 
+    public static ExtractableResponse<Response> 예약_대기_생성_요청(String token, String currentDate, Long timeId, Long themeId, String url) {
+        final Map<String, Object> waiting = getReservationWaitingForBody(currentDate, timeId, themeId);
+        return RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .cookie(토큰, token)
+                .body(waiting)
+                .when().post(url)
+                .then().log().all()
+                .extract();
+    }
+
     public static ExtractableResponse<Response> 예약_삭제_요청(Long id, String url) {
         return RestAssured.given().log().all()
                 .when().delete(url + "/" + id)
@@ -53,6 +64,13 @@ public class ReservationRestAssured {
     private static Map<String, Object> getReservationForBody(String name, String currentDate, Long timeId, Long themeId) {
         return Map.of(
                 이름, name,
+                예약_시간, currentDate,
+                시간_아이디, timeId,
+                테마_아이디, themeId);
+    }
+
+    private static Map<String, Object> getReservationWaitingForBody(String currentDate, Long timeId, Long themeId) {
+        return Map.of(
                 예약_시간, currentDate,
                 시간_아이디, timeId,
                 테마_아이디, themeId);

@@ -6,7 +6,7 @@ import roomescape.domain.reservation.domain.Reservation;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Objects;
 
 @Entity
 public class Member {
@@ -41,6 +41,15 @@ public class Member {
         this.role = Role.ADMIN.getRole();
     }
 
+    public void connectWith(Reservation reservation) {
+        reservations.add(reservation);
+        reservation.connectWith(this);
+    }
+
+    public boolean authenticationCheck(Long memberId) {
+        return Objects.equals(this.id, memberId);
+    }
+
     public Long getId() {
         return id;
     }
@@ -59,10 +68,5 @@ public class Member {
 
     public String getRole() {
         return role;
-    }
-
-    public void connectWith(Reservation reservation) {
-        reservations.add(reservation);
-        reservation.connectWith(this);
     }
 }

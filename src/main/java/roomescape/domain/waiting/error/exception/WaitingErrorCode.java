@@ -3,7 +3,8 @@ package roomescape.domain.waiting.error.exception;
 import org.springframework.http.HttpStatus;
 
 public enum WaitingErrorCode {
-    NO_WAITING_ERROR(HttpStatus.BAD_REQUEST.value(), "웨이팅이 존재하지 않습니다.");
+    NO_WAITING_ERROR(HttpStatus.BAD_REQUEST.value(), "웨이팅이 존재하지 않습니다."),
+    NOT_AUTHENTICATION_ERROR(HttpStatus.BAD_REQUEST.value(), "나의 예약이 아닙니다.");
 
     private final int status;
     private final String errorMessage;

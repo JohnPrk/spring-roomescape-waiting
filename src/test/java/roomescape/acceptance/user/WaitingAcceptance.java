@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import roomescape.domain.waiting.error.exception.WaitingErrorCode;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static roomescape.restAssured.MemberRestAssured.로그인_요청;
 import static roomescape.restAssured.MemberRestAssured.회원가입_요청;
 import static roomescape.restAssured.ReservationRestAssured.*;
-import static roomescape.restAssured.ReservationRestAssured.내_예약_조회_요청;
 import static roomescape.restAssured.ThemeRestAssured.테마_생성_요청;
 import static roomescape.restAssured.TimeRestAssured.예약_시간_생성_요청;
 import static roomescape.restAssured.WaitingRestAssured.예약_대기_삭제_요청;
@@ -30,6 +30,7 @@ public class WaitingAcceptance {
     private static final String ID = "id";
     private static final String TOKEN = "token";
     private static final String STATUS = "status";
+    private static final String ERROR_MESSAGES = "errorMessages";
 
     private Long 공포_테마_아이디 = null;
     private Long 오_분_뒤_예약시간_아이디 = null;
@@ -60,7 +61,7 @@ public class WaitingAcceptance {
      * then : 204 상태코드를 검증할 수 있다.
      */
     @Test
-    void 사용자는_자신의_예약대기를_삭제할_수_있다() {
+    void 사용자는_자신의_예약_대기를_삭제할_수_있다() {
 
         //given
         예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations");
@@ -83,8 +84,8 @@ public class WaitingAcceptance {
 
         //given
         예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations").jsonPath().getLong(ID);
-        예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
-        Long 예약_대기_아이디 = 예약_대기_생성_요청(세_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
+        Long 예약_대기_아이디 = 예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
+        예약_대기_생성_요청(세_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
 
         //when
         ExtractableResponse<Response> 삭제_이_전의_두_번째_예약_대기 = 내_예약_조회_요청(세_번째_사용자_토큰, "/reservations/mine");
@@ -95,5 +96,25 @@ public class WaitingAcceptance {
 
         //then
         assertThat(삭제_이_후의_두_번째_예약_대기_순번).isLessThan(삭제_이_전의_두_번째_예약_대기_순번);
+    }
+
+    /**
+     * given : @BeforeEach + 예약 생성 요청(같은 날짜와 같은 테마와 같은 시간대의 상대방 예약 * 1 + 나의 예약 대기  * 1)
+     * when : 자신의 예약 대기가 아닌 예약 대기를 삭제하면
+     * then : 예외가 발생한다.
+     */
+    @Test
+    void 자신의_예약_대기가_아닌_예약_대기를_삭제하려고_하면_예외가_발생한다() {
+
+        //given
+        예약_생성_요청(첫_번째_사용자_토큰, "박민욱", CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations");
+        Long 두_번째_예약_대기_아이디 = 예약_대기_생성_요청(두_번째_사용자_토큰, CURRENT_DATE, 오_분_뒤_예약시간_아이디, 공포_테마_아이디, "/reservations/wait").jsonPath().getLong(ID);
+
+        //when
+        ExtractableResponse<Response> response = 예약_대기_삭제_요청(첫_번째_사용자_토큰, 두_번째_예약_대기_아이디, "/waiting");
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.jsonPath().getString(ERROR_MESSAGES)).isEqualTo("[" + WaitingErrorCode.NOT_AUTHENTICATION_ERROR.getErrorMessage() + "]");
     }
 }

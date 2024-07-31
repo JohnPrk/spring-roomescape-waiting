@@ -37,8 +37,9 @@ public class WaitingService {
     }
 
     @Transactional
-    public void delete(Long id) {
+    public void delete(Long memberId, Long id) {
         Waiting deleteWaiting = waitingRepository.findById(id).orElseThrow(() -> new WaitingException(WaitingErrorCode.NO_WAITING_ERROR));
+        deleteWaiting.memberAuthenticationCheck(memberId);
         waitingRepository.delete(deleteWaiting);
     }
 

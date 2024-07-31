@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.time.domain.Time;
+import roomescape.domain.waiting.error.exception.WaitingErrorCode;
+import roomescape.domain.waiting.error.exception.WaitingException;
 
 @Entity
 public class Waiting {
@@ -35,6 +37,12 @@ public class Waiting {
         this.member = member;
         this.time = time;
         this.date = date;
+    }
+
+    public void memberAuthenticationCheck(Long memberId) {
+        if (!this.member.authenticationCheck(memberId)) {
+            throw new WaitingException(WaitingErrorCode.NOT_AUTHENTICATION_ERROR);
+        }
     }
 
     public Long getId() {

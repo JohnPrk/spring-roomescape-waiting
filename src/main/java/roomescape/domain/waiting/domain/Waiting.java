@@ -7,6 +7,8 @@ import roomescape.domain.time.domain.Time;
 import roomescape.domain.waiting.error.exception.WaitingErrorCode;
 import roomescape.domain.waiting.error.exception.WaitingException;
 
+import java.util.Objects;
+
 @Entity
 public class Waiting {
 
@@ -63,5 +65,18 @@ public class Waiting {
 
     public String getDate() {
         return date;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Waiting waiting = (Waiting) o;
+        return Objects.equals(getId(), waiting.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

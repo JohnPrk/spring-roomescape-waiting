@@ -5,6 +5,8 @@ import roomescape.domain.member.domain.Member;
 import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.time.domain.Time;
 
+import java.util.Objects;
+
 @Entity
 public class Reservation {
 
@@ -70,5 +72,18 @@ public class Reservation {
 
     public void addMember(Member member) {
         this.member = member;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Reservation that = (Reservation) o;
+        return Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

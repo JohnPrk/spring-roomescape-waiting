@@ -51,7 +51,7 @@ public class ReservationService {
         Theme theme = themeService.findById(reservationRequest.getThemeId());
         validationCheck(reservationRequest.getName(), reservationRequest.getDate(), time);
         Reservation reservation = new Reservation(null, reservationRequest.getName(), reservationRequest.getDate(), reservationRequest.getStatus(), theme, time, null);
-        loginMember.connectWith(reservation);
+        loginMember.addReservation(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
         return mapToReservationResponseDto(savedReservation);
@@ -71,7 +71,7 @@ public class ReservationService {
         Theme theme = themeService.findById(adminReservationRequest.getThemeId());
         Member member = memberService.findById(adminReservationRequest.getMemberId());
         Reservation reservation = new Reservation(null, member.getName(), adminReservationRequest.getDate(), adminReservationRequest.getStatus(), theme, time, member);
-        member.connectWith(reservation);
+        member.addReservation(reservation);
         Long id = reservationRepository.save(reservation);
         Reservation savedReservation = findById(id);
         return mapToReservationResponseDto(savedReservation);

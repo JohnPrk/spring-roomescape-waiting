@@ -41,9 +41,9 @@ public class Member {
         this.role = Role.ADMIN.getRole();
     }
 
-    public void connectWith(Reservation reservation) {
+    public void addReservation(Reservation reservation) {
         reservations.add(reservation);
-        reservation.connectWith(this);
+        reservation.addMember(this);
     }
 
     public boolean authenticationCheck(Long memberId) {

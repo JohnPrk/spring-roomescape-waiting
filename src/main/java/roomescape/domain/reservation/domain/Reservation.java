@@ -68,7 +68,7 @@ public class Reservation {
         return member;
     }
 
-    public void connectWith(Member member) {
+    public void addMember(Member member) {
         this.member = member;
     }
 }

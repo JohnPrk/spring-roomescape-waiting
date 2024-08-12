@@ -50,8 +50,21 @@ public class TimeService {
     }
 
     @Transactional(readOnly = true)
-    public List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date) {
-        return timeRepository.findByThemeIdAndDate(themeId, date);
+    public List<TimeWithStatus> findByThemeIdAndDateWithSingleQuery(String themeId, String date) {
+        timeRepository.findByThemeIdAndDateWithSingleQuery(themeId, date);
+        return timeRepository.findByThemeIdAndDateWithSingleQuery(themeId, date);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TimeWithStatus> findByThemeIdAndDateWithMultipleQuery(String themeId, String date) {
+        List<Time> times = timeRepository.findAll();
+        List<Long> reservedTimeId = timeRepository.findByThemeIdAndDateWithMultipleQuery(themeId, date);
+        return times.stream()
+                .map(time -> new TimeWithStatus(
+                        time.getId(),
+                        time.getStartAt(),
+                        !reservedTimeId.contains(time.getId()) ? "true" : "false"
+                )).toList();
     }
 
     private void validationCheck(String startAt) {

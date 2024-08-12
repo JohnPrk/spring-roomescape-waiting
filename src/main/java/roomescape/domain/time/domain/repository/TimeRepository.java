@@ -15,5 +15,7 @@ public interface TimeRepository {
 
     void delete(Time time);
 
-    List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date);
+    List<TimeWithStatus> findByThemeIdAndDateWithSingleQuery(String themeId, String date);
+
+    List<Long> findByThemeIdAndDateWithMultipleQuery(String themeId, String date);
 }

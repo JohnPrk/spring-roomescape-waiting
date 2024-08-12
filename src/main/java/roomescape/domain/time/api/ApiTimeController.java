@@ -33,7 +33,7 @@ public class ApiTimeController {
 
     @GetMapping("/available")
     public ResponseEntity<List<TimeWithStatus>> findByThemeIdAndDate(@RequestParam("date") String date, @RequestParam("themeId") String themeId) {
-        List<TimeWithStatus> timeResponses = timeService.findByThemeIdAndDate(themeId, date);
+        List<TimeWithStatus> timeResponses = timeService.findByThemeIdAndDateWithMultipleQuery(themeId, date);
         return ResponseEntity.ok().body(timeResponses);
     }
 

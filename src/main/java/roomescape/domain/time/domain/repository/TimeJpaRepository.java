@@ -19,6 +19,12 @@ public class TimeJpaRepository implements TimeRepository {
             FROM Time t
             LEFT JOIN Reservation r ON t.id = r.time.id AND r.date = :date AND r.theme.id = :themeId
             """;
+    private static final String QUERY = """
+            SELECT t.id
+            FROM Reservation r
+            JOIN Time t ON r.time.id = t.id
+            WHERE r.theme.id = :themeId AND r.date = :date
+            """;
     private static final String THEME_ID = "themeId";
     private static final String DATE = "date";
     private static final String ID = "id";
@@ -54,8 +60,16 @@ public class TimeJpaRepository implements TimeRepository {
     }
 
     @Override
-    public List<TimeWithStatus> findByThemeIdAndDate(String themeId, String date) {
+    public List<TimeWithStatus> findByThemeIdAndDateWithSingleQuery(String themeId, String date) {
         TypedQuery<TimeWithStatus> query = entityManager.createQuery(FIND_BY_THEME_ID_AND_DATE_SQL, TimeWithStatus.class);
+        query.setParameter(THEME_ID, themeId);
+        query.setParameter(DATE, date);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Long> findByThemeIdAndDateWithMultipleQuery(String themeId, String date) {
+        TypedQuery<Long> query = entityManager.createQuery(QUERY, Long.class);
         query.setParameter(THEME_ID, themeId);
         query.setParameter(DATE, date);
         return query.getResultList();

@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import roomescape.domain.member.domain.Member;
 import roomescape.domain.member.service.MemberService;
 import roomescape.domain.reservation.domain.Reservation;
+import roomescape.domain.reservation.domain.Reservations;
 import roomescape.domain.reservation.domain.repository.ReservationRepository;
 import roomescape.domain.reservation.error.exception.ReservationErrorCode;
 import roomescape.domain.reservation.error.exception.ReservationException;
@@ -16,13 +17,12 @@ import roomescape.domain.theme.domain.Theme;
 import roomescape.domain.theme.service.ThemeService;
 import roomescape.domain.time.domain.Time;
 import roomescape.domain.time.service.TimeService;
-import roomescape.domain.waiting.domain.WaitingRank;
+import roomescape.domain.waiting.domain.WaitingRanks;
 import roomescape.domain.waiting.service.WaitingService;
 import roomescape.domain.waiting.service.dto.WaitingResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static roomescape.domain.reservation.utils.DateTimeCheckUtil.isBeforeCheck;
 import static roomescape.domain.reservation.utils.FormatCheckUtil.reservationDateFormatCheck;
@@ -85,19 +85,13 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public List<ReservationResponse> findAll() {
         List<Reservation> reservations = reservationRepository.findAll();
-        return reservations.stream().map(this::mapToReservationResponseDto).collect(Collectors.toList());
+        return reservations.stream().map(this::mapToReservationResponseDto).toList();
     }
 
     public List<ReservationResponse> findAllByMemberId(Long id) {
-        List<Reservation> reservations = reservationRepository.findAllByMemberId(id);
-        if (reservations.isEmpty()) {
-            reservations = new ArrayList<>();
-        }
-        List<WaitingRank> waitingRanks = waitingService.findWaitingRankByMemberId(id);
-        reservations.addAll(waitingRanks.stream()
-                .map(waitingRank -> new Reservation(waitingRank.getWaiting().getId(), waitingRank.getWaiting().getMember().getName(), waitingRank.getWaiting().getDate(), waitingRank.getRank() + "번째 예약대기", waitingRank.getWaiting().getTheme(), waitingRank.getWaiting().getTime(), waitingRank.getWaiting().getMember())).toList());
-        return reservations.stream()
-                .map(this::mapToReservationResponseDto).toList();
+        Reservations reservations = new Reservations(reservationRepository.findAllByMemberId(id));
+        WaitingRanks waitingRanks = new WaitingRanks(waitingService.findWaitingRankByMemberId(id));
+        return combineResponses(reservations, waitingRanks);
     }
 
     @Transactional
@@ -112,14 +106,14 @@ public class ReservationService {
         isBeforeCheck(date, time.getStartAt());
     }
 
+    private List<ReservationResponse> combineResponses(Reservations reservations, WaitingRanks waitingRanks) {
+        List<ReservationResponse> combinedResponses = new ArrayList<>();
+        combinedResponses.addAll(reservations.mapToReservationResponseDto());
+        combinedResponses.addAll(waitingRanks.mapToReservationResponseDto());
+        return combinedResponses;
+    }
+
     private ReservationResponse mapToReservationResponseDto(Reservation reservation) {
-        return new ReservationResponse(
-                reservation.getId(),
-                reservation.getName(),
-                reservation.getDate(),
-                reservation.getStatus(),
-                reservation.getTime(),
-                reservation.getTheme(),
-                reservation.getMember());
+        return new ReservationResponse(reservation);
     }
 }
